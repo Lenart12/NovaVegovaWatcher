@@ -15,5 +15,5 @@ async def on_ready():
     bot.add_cog(watcher.Watcher(bot))
 
 with open('token.txt') as fh:
-    token = fg.read().strip()
+    token = fh.read().strip()
 bot.run(token)
