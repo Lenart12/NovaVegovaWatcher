@@ -9,7 +9,10 @@ import pagelib
 import json
 
 def format_channel(channel: discord.TextChannel):
-    return f'{channel.guild.name} > #{channel.name}'
+    if channel:
+        return f'{channel.guild.name} > #{channel.name} ({channel.id})'
+    else:
+        return 'None > #None (None)'
 
 class Watcher(commands.Cog):
     def __init__(self, bot):
@@ -23,7 +26,7 @@ class Watcher(commands.Cog):
         print('Monitoring:')
         if self.bot.watcher_items:
             for razred, data in self.bot.watcher_items.items():
-                print(f'"{razred}" : {data["channels"]}')
+                print(f'"{razred}" : [{", ".join(format_channel(self.bot.get_channel(c)) for c in data["channels"])}]')
 
     @commands.command()
     @commands.has_guild_permissions(administrator=True)
@@ -119,9 +122,9 @@ class Watcher(commands.Cog):
                         if channel:
                             try:
                                 await channel.send(out)
-                                await aioconsole.aprint(f'Sending to {channel_id}')
+                                await aioconsole.aprint(f'Sending to {format_channel(channel)}')
                             except discord.Forbidden:
-                                await aioconsole.aprint(f'Cant send to {channel_id}! Forbidden')
+                                await aioconsole.aprint(f'Cant send to {format_channel(channel)}! Forbidden')
 
                         else:
                             await aioconsole.aprint(f'Cant send to {channel_id}! - no channel')
