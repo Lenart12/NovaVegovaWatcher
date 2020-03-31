@@ -16,4 +16,5 @@ async def on_ready():
 
 with open('token.txt') as fh:
     token = fh.read().strip()
+
 bot.run(token)
