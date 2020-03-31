@@ -91,7 +91,7 @@ class Watcher(commands.Cog):
         with open('watcher_items.json', 'w') as fh:
             json.dump(self.bot.watcher_items, fh)
 
-    @tasks.loop(minutes=5.0)
+    @tasks.loop(minutes=15.0)
     async def watcher(self):
         try:
             save = False
