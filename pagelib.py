@@ -18,6 +18,7 @@ def split_page(html):
     if html.find('404 Not Found') > -1:
         return {}
 
+    # Skip to tasks
     html = html[html.find('<h1>') + 4:]
     html = html[html.find('<h1>') + 4:]
 
@@ -48,20 +49,11 @@ def split_page(html):
 
             return out
 
-# Save as json
-def save_last(tasks):
-    with open('/tmp/nazadnje.json', 'w') as fh:
-        json.dump(tasks, fh)
-
-# Get as dictionary
-def get_last(tasks):
-    with open('/tmp/nazadnje.json', 'r') as fh:
-        return json.load(fh)
-
 # Get difference as dictionary
 def get_diff(old_tasks, tasks):
     out = {}
 
+    # Gremo cez vsak predmet
     for k in tasks.keys():
         case_a = old_tasks.get(k, '')
         case_b = tasks[k]

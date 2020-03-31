@@ -1,4 +1,5 @@
 import asyncio
+import discord
 from discord.ext import commands, tasks
 
 import aioconsole
@@ -6,6 +7,9 @@ import traceback
 import pagelib
 
 import json
+
+def format_channel(channel: discord.TextChannel):
+    return f'{channel.guild.name} > #{channel.name}'
 
 class Watcher(commands.Cog):
     def __init__(self, bot):
@@ -16,7 +20,10 @@ class Watcher(commands.Cog):
         with open('watcher_items.json', 'r') as fh:
             self.bot.watcher_items = json.load(fh)
 
-        print(f'Started watcher\nItems={len(self.bot.watcher_items)}')
+        print('Monitoring:')
+        if self.bot.watcher_items:
+            for razred, data in self.bot.watcher_items.items():
+                print(f'"{razred}" : {data["channels"]}')
 
     @commands.command()
     @commands.has_guild_permissions(administrator=True)
@@ -47,17 +54,21 @@ class Watcher(commands.Cog):
                             self.bot.watcher_items[razred]['channels'].append(ctx.channel.id)
                         else:
                             await ctx.channel.send(f'Sporocanje za `{url}` v <#{ctx.channel.id}> ze vklopljeno')
+                            await aioconsole.aprint(f'Already turned on for {razred} - {format_channel(ctx.channel)}')
                             return
                     else:
                         self.bot.watcher_items[razred] = {
                             "channels" : [ctx.channel.id],
                             "old_tasks" : tasks
                         }
+
+                    await aioconsole.aprint(f'Added {format_channel(ctx.channel)} to {razred}')
                 else:
                     self.bot.watcher_items[razred] = {
                         "channels" : [ctx.channel.id],
                         "old_tasks" : tasks
                     }
+                    await aioconsole.aprint(f'Added {format_channel(ctx.channel)} to new {razred}')
 
                 with open('watcher_items.json', 'w') as fh:
                     json.dump(self.bot.watcher_items, fh)
@@ -71,6 +82,8 @@ class Watcher(commands.Cog):
             self.bot.watcher_items[razred]['channels'].remove(ctx.channel.id)
 
         await ctx.channel.send(f'Izklopjeno sporocanje za { razred } v <#{ctx.channel.id}>')
+
+        await aioconsole.aprint(f'Turned off {razred} for {format_channel(ctx.channel)}')
 
         with open('watcher_items.json', 'w') as fh:
             json.dump(self.bot.watcher_items, fh)
@@ -103,8 +116,16 @@ class Watcher(commands.Cog):
 
                     for channel_id in data['channels']:
                         channel = self.bot.get_channel(channel_id)
-                        await aioconsole.aprint(f'Sending to {channel_id}')
-                        await channel.send(out)
+                        if channel:
+                            try:
+                                await channel.send(out)
+                                await aioconsole.aprint(f'Sending to {channel_id}')
+                            except discord.Forbidden:
+                                await aioconsole.aprint(f'Cant send to {channel_id}! Forbidden')
+
+                        else:
+                            await aioconsole.aprint(f'Cant send to {channel_id}! - no channel')
+
 
             if save:
                 with open('watcher_items.json', 'w') as fh:
