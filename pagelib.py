@@ -58,7 +58,8 @@ def get_diff(old_tasks, tasks):
         case_a = old_tasks.get(k, '')
         case_b = tasks[k]
 
-        diff = ''.join(c[2] for c in [li for li in difflib.ndiff(case_a, case_b) if li[0] != ' '] if c[0] == '+').strip()
+        differ = difflib.Differ()
+        diff = '\n'.join([d for d in differ.compare(case_a.splitlines(), case_b.splitlines()) if d[:2] != '  ' ] )
         out[k] = diff
 
     return out

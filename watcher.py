@@ -108,7 +108,7 @@ class Watcher(commands.Cog):
                 out = ''
                 for ime, nal in diff.items():
                     if nal:
-                        out += f'**{ime}**\n```{nal}```\n'
+                        out += f'**{ime}**\n```diff\n{nal}```\n'
 
                 if out:
                     self.bot.watcher_items[razred]['old_tasks'] = tasks
