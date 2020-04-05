@@ -67,7 +67,7 @@ def get_diff(old_tasks, tasks):
 # Example   
 if __name__ == "__main__":
     school_url = 'https://nova.vegova.si/'
-    razred='g-1-c'
+    razred='r-4-b'
     url = f'{school_url}{razred}'
     tasks = split_page(get_page(url))
     print(tasks)

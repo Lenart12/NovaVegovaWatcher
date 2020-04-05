@@ -38,6 +38,36 @@ class Watcher(commands.Cog):
             for razred, data in self.bot.watcher_items.items():
                 print(f'{bcolors.HEADER}"{razred}"{bcolors.ENDC} : {bcolors.OKGREEN}[{", ".join(format_channel(self.bot.get_channel(c)) for c in data["channels"])}]{bcolors.ENDC}')
 
+    def cog_unload(self):
+        self.watcher.cancel()
+
+    @commands.is_owner()
+    @commands.command(name="update_old_tasks")
+    async def update_old_tasks(self, ctx):
+        for razred, _ in self.bot.watcher_items.items():
+            url = f'{self.bot.school_url}{razred}'
+            tasks = pagelib.split_page(pagelib.get_page(url))
+            self.bot.watcher_items[razred]['old_tasks'] = tasks
+
+        with open('watcher_items.json', 'w') as fh:
+            json.dump(self.bot.watcher_items, fh)
+
+        await aioconsole.aprint(f'{bcolors.OKGREEN}Force updated tasks{bcolors.ENDC}')
+
+    @commands.is_owner()
+    @commands.command(name="tell_all")
+    async def tell_all(self, ctx, *, msg: str):
+        await aioconsole.aprint(f'{bcolors.OKBLUE}Sending {msg} to all channels{bcolors.ENDC}')
+        for razred, data in self.bot.watcher_items.items():
+            await aioconsole.aprint(f'{bcolors.HEADER}{razred}:{bcolors.ENDC}')
+            for channel_id in data['channels']:
+                try:
+                    channel = self.bot.get_channel(channel_id)
+                    await channel.send(msg)
+                    await aioconsole.aprint(f'{bcolors.OKBLUE}Sending to {format_channel(channel)}{bcolors.ENDC}')
+                except Exception as e:
+                    await aioconsole.aprint(f'{bcolors.WARNING}Couldn\'t send to {format_channel(channel)} - {e}{bcolors.ENDC}')
+
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
